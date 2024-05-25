@@ -1,6 +1,10 @@
 .text-white { color: #fff; }
-.bg-white { background: linear-gradient(135deg, #667eea, #764ba2);
-    border-radius: 0.25rem 0.25rem !important; }
+.bg-white {
+    background: linear-gradient(135deg, #764ba2, #764ba2);
+    border-radius: 0.25rem 0.25rem !important;
+    position: relative;
+    top: -10px; /* Adjust this value as needed */
+}
 
 .bg-black { background: linear-gradient(135deg, #000000, #434343); }
 .text-black { color: #000; }

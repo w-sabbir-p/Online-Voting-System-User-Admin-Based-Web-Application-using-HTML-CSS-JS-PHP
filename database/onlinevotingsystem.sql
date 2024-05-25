@@ -29,12 +29,11 @@ CREATE TABLE `candidate_details` (
   `candidate_details` text DEFAULT NULL,
   `candidate_photo` text DEFAULT NULL,
   `inserted_by` varchar(255) DEFAULT NULL,
-  `inserted_on` date DEFAULT NULL,
-  ALTER TABLE candidate_details ADD COLUMN updated_by varchar(255) DEFAULT NULL AFTER inserted_by;
-
+  `inserted_on` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-
+ALTER TABLE `candidate_details` 
+  ADD COLUMN `updated_by` varchar(255) DEFAULT NULL AFTER `inserted_by`;
 
 --
 -- Dumping data for table `candidate_details`

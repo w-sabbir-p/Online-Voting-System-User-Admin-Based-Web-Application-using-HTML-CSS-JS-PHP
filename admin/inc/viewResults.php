@@ -45,6 +45,8 @@
                                 $candidateNames = [];
                                 $candidateVotes = [];
                                 $fetchingCandidates = mysqli_query($db, "SELECT * FROM candidate_details WHERE election_id = '". $election_id ."'") or die(mysqli_error($db));
+                                $maxVotes = 0;
+                                $winnerCandidate = '';
 
                                 while($candidateData = mysqli_fetch_assoc($fetchingCandidates)) {
                                     $candidate_id = $candidateData['id'];
@@ -56,6 +58,11 @@
 
                                     $candidateNames[] = $candidateData['candidate_name'] . ' (' . $totalVotes . ' votes)';
                                     $candidateVotes[] = $totalVotes;
+
+                                    if ($totalVotes > $maxVotes) {
+                                        $maxVotes = $totalVotes;
+                                        $winnerCandidate = $candidateData['candidate_name'];
+                                    }
                             ?>
                                     <tr>
                                         <td> <img src="<?php echo $candidate_photo; ?>" class="candidate_photo"> </td>
@@ -67,6 +74,11 @@
                             ?>
                             </tbody>
                         </table>
+
+                        <!-- Winner Box -->
+                        <div class="alert alert-success my-3">
+                            <h4>Winner: <?php echo $winnerCandidate; ?> with <?php echo $maxVotes; ?> votes!</h4>
+                        </div>
 
                         <!-- Pie Chart Canvas -->
                         <canvas id="voteChart"></canvas>

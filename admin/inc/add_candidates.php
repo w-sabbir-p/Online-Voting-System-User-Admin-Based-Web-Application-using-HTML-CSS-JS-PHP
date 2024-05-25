@@ -1,6 +1,7 @@
 <?php 
     include_once 'config.php'; // Include database connection
 
+    // Display success or error messages based on URL parameters
     if(isset($_GET['added'])) {
 ?>
         <div class="alert alert-success my-3" role="alert">
@@ -39,10 +40,11 @@
         $candidateData = mysqli_fetch_assoc($fetchCandidate);
     }
 
+    // Handle adding a new candidate
     if(isset($_POST['addCandidateBtn'])) {
-        $election_id = $_POST['election_id'];
-        $candidate_name = $_POST['candidate_name'];
-        $candidate_details = $_POST['candidate_details'];
+        $election_id = mysqli_real_escape_string($db, $_POST['election_id']);
+        $candidate_name = mysqli_real_escape_string($db, $_POST['candidate_name']);
+        $candidate_details = mysqli_real_escape_string($db, $_POST['candidate_details']);
         $inserted_by = 'Admin'; // You can replace 'Admin' with the actual user's name or ID
         $inserted_on = date('Y-m-d');
 
@@ -74,12 +76,13 @@
         }
     }
 
+    // Handle editing an existing candidate
     if(isset($_POST['editCandidateBtn'])) {
-        $election_id = $_POST['election_id'];
-        $candidate_name = $_POST['candidate_name'];
-        $candidate_details = $_POST['candidate_details'];
-        $e_id = $_POST['edit_id'];
-        $updated_by = 'Admin'; // You can replace 'Admin' with the actual user's name or ID
+        $election_id = mysqli_real_escape_string($db, $_POST['election_id']);
+        $candidate_name = mysqli_real_escape_string($db, $_POST['candidate_name']);
+        $candidate_details = mysqli_real_escape_string($db, $_POST['candidate_details']);
+        $e_id = mysqli_real_escape_string($db, $_POST['edit_id']);
+        $updated_by = 'Admin'; 
         $updated_on = date('Y-m-d');
 
         if ($_FILES['candidate_photo']['size'] > 0) {
@@ -120,32 +123,31 @@
         <form method="POST" enctype="multipart/form-data">
             <div class="form-group">
                 <select class="form-control" name="election_id" required> 
-                    <option value=""> Select Election </option>
+                    <option value="">Select Election</option>
                     <?php 
                         $fetchingElections = mysqli_query($db, "SELECT * FROM elections") OR die(mysqli_error($db));
                         $isAnyElectionAdded = mysqli_num_rows($fetchingElections);
-                        if($isAnyElectionAdded > 0)
-                        {
-                            while($row = mysqli_fetch_assoc($fetchingElections))
-                            {
+                        if($isAnyElectionAdded > 0) {
+                            while($row = mysqli_fetch_assoc($fetchingElections)) {
                                 $election_id = $row['id'];
                                 $election_name = $row['election_topic'];
                                 $allowed_candidates = $row['no_of_candidates'];
 
-                                // Now checking how many candidates are added in this election 
+                                // Checking how many candidates are added in this election 
                                 $fetchingCandidate = mysqli_query($db, "SELECT * FROM candidate_details WHERE election_id = '". $election_id ."'") or die(mysqli_error($db));
                                 $added_candidates = mysqli_num_rows($fetchingCandidate);
 
-                                if($added_candidates < $allowed_candidates || isset($candidateData))
-                                {
+                                if($added_candidates < $allowed_candidates || isset($candidateData)) {
                     ?>
-                                <option value="<?php echo $election_id; ?>" <?php echo (isset($candidateData) && $candidateData['election_id'] == $election_id) ? 'selected' : ''; ?>><?php echo $election_name; ?></option>
+                                <option value="<?php echo $election_id; ?>" <?php echo (isset($candidateData) && $candidateData['election_id'] == $election_id) ? 'selected' : ''; ?>>
+                                    <?php echo $election_name; ?>
+                                </option>
                     <?php
                                 }
                             }
                         } else {
                     ?>
-                            <option value=""> Please add election first </option>
+                            <option value="">Please add election first</option>
                     <?php
                         }
                     ?>
@@ -186,28 +188,25 @@
                     $fetchingData = mysqli_query($db, "SELECT * FROM candidate_details") or die(mysqli_error($db)); 
                     $isAnyCandidateAdded = mysqli_num_rows($fetchingData);
 
-                    if($isAnyCandidateAdded > 0)
-                    {
+                    if($isAnyCandidateAdded > 0) {
                         $sno = 1;
-                        while($row = mysqli_fetch_assoc($fetchingData))
-                        {
+                        while($row = mysqli_fetch_assoc($fetchingData)) {
                             $election_id = $row['election_id'];
                             $fetchingElectionName = mysqli_query($db, "SELECT * FROM elections WHERE id = '". $election_id ."'") or die(mysqli_error($db));
                             $execFetchingElectionNameQuery = mysqli_fetch_assoc($fetchingElectionName);
                             $election_name = $execFetchingElectionNameQuery['election_topic'];
 
                             $candidate_photo = $row['candidate_photo'];
-
                 ?>
                             <tr>
                                 <td><?php echo $sno++; ?></td>
-                                <td> <img src="<?php echo $candidate_photo; ?>" class="candidate_photo" />    </td>
+                                <td><img src="<?php echo $candidate_photo; ?>" class="candidate_photo" /></td>
                                 <td><?php echo $row['candidate_name']; ?></td>
                                 <td><?php echo $row['candidate_details']; ?></td>
                                 <td><?php echo $election_name; ?></td>
                                 <td> 
-                                    <a href="#" class="btn btn-sm btn-warning" onclick="EditData(<?php echo $row['id']; ?>)"> Edit </a>
-                                    <button class="btn btn-sm btn-danger" onclick="DeleteData(<?php echo $row['id']; ?>)"> Delete </button>
+                                    <a href="#" class="btn btn-sm btn-warning" onclick="EditData(<?php echo $row['id']; ?>)">Edit</a>
+                                    <button class="btn btn-sm btn-danger" onclick="DeleteData(<?php echo $row['id']; ?>)">Delete</button>
                                 </td>
                             </tr>   
                 <?php
@@ -215,7 +214,7 @@
                     } else {
                 ?>
                         <tr> 
-                            <td colspan="6"> No any candidate is added yet. </td>
+                            <td colspan="6">No candidate has been added yet.</td>
                         </tr>
                 <?php
                     }
@@ -226,21 +225,14 @@
 </div>
 
 <script>
-    const DeleteData = (c_id) => 
-    {
+    const DeleteData = (c_id) => {
         let c = confirm("Are you sure you want to delete this candidate?");
-
-        if(c == true)
-        {
+        if(c == true) {
             location.assign("index.php?addCandidatePage=1&delete_id=" + c_id);
         }
     }
 
-    const EditData = (c_id) => 
-    {
+    const EditData = (c_id) => {
         location.assign("index.php?addCandidatePage=1&edit_id=" + c_id);
     }
 </script>
-
-
-               
